@@ -1,12 +1,14 @@
 require 'mongoid'
-require_relative "documents/event"
-require_relative "documents/url"
-require_relative "documents/publisher"
 
-Mongoid.load!('./mongoid.yml', :development) #, database: :click_stats
+require_relative 'lib/mongoid_postgres_bench/documents/event'
+require_relative 'lib/mongoid_postgres_bench/documents/url'
+require_relative 'lib/mongoid_postgres_bench/documents/publisher'
 
-# load the redis database into mongo
+Mongoid.load!('config/mongoid.yml', :development) #, database: :click_stats
 
-e = Event.new(id: 1 )
+load "./seed.rb" if ARGV.include? '--seed'
 
-url = Url.new(index: 0, value: 'http://www.twitter.com')
+load 'lib/mongoid_postgres_bench/inserting.rb' if ARGV.include? '--inserting'
+load 'lib/mongoid_postgres_bench/updating.rb' if ARGV.include? '--updating'
+load 'lib/mongoid_postgres_bench/reading.rb' if ARGV.include? '--reading'
+

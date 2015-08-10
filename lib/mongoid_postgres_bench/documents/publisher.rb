@@ -1,7 +1,7 @@
 class Publisher
   include Mongoid::Document
 
-  embedded_in :event
+  belongs_to :event
 
   field :id, type: Integer
 end
