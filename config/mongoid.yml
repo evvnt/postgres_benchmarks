@@ -1,6 +1,0 @@
-development:
-  sessions:
-    default:
-      database: click_stats_json
-      hosts:
-        - localhost:27017

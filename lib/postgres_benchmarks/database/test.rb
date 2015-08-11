@@ -1,11 +1,6 @@
-require 'mongoid'
 require 'pg'
-# require_relative "documents/event"
-# require_relative "documents/url"
-# require_relative "documents/publisher"
 
-
-module MongoidPostgresBench
+module PostgresBenchmarks
 
   module Database
     class Test

@@ -10,10 +10,10 @@ class Inserting
     @publishers = publishers
     @times = urls*publishers
 
-    @referrer_json = File.open($root+'/lib/mongoid_postgres_bench/factories/referrer_data.json').read
-    @clicks_json = File.open($root+'/lib/mongoid_postgres_bench/factories/click_data.json').read
+    @referrer_json = File.open($root+'/lib/postgres_jsonb_bench/factories/referrer_data.json').read
+    @clicks_json = File.open($root+'/lib/postgres_jsonb_bench/factories/click_data.json').read
 
-    @db = MongoidPostgresBench::Database::Test.new
+    @db = PostgresBenchmarks::Database::Test.new
   end
 
   def escaped_referrer_json
@@ -25,12 +25,12 @@ class Inserting
   end
 
   def clicks_values
-    clicks_values  ||= (array = JSON.parse(File.open($root+'/lib/mongoid_postgres_bench/factories/click_data.json').read)
+    clicks_values  ||= (array = JSON.parse(File.open($root+'/lib/postgres_jsonb_bench/factories/click_data.json').read)
         array.map { |hash| "(#{hash['clicks']}, '#{hash['day_start']}')" }.join(","))
   end
 
   def referrer_values
-    referrer_values ||= (array = JSON.parse(File.open($root+'/lib/mongoid_postgres_bench/factories/referrer_data.json').read)
+    referrer_values ||= (array = JSON.parse(File.open($root+'/lib/postgres_jsonb_bench/factories/referrer_data.json').read)
         array.map { |hash| "(#{hash['clicks']}, '#{hash['referrer']}')" }.join(","))
   end
 
@@ -70,10 +70,5 @@ class Inserting
       x.compare!
     end
   end
-
-  # def reset_the_db
-  #   Mongoid
-  # end
-  
 end
 

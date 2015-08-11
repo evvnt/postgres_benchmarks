@@ -1,11 +1,11 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'mongoid_postgres_bench/version'
+require 'postgres_jsonb_bench/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "mongoid-postgres-bench"
-  spec.version       = MongoidPostgresBench::VERSION
+  spec.name          = "postgres_jsonb_bench"
+  spec.version       = PostgresBenchmarks::VERSION
   spec.authors       = ["Iain McNulty"]
   spec.email         = ["iainmcnulty@evvnt.com"]
   spec.summary       = %q{TODO: Write a short summary. Required.}
