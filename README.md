@@ -18,7 +18,13 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+The gem is designed to allow the user to insert teh number of records they wish to benchmark database performance against.
+
+For the needs of evvnt, we wish to test the performance of storing our click data in a json column or in a normalised form.
+
+We will benchmark insert, update, and read for these methods and see which is better for us.
+
+
 
 ## Contributing
 

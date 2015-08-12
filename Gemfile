@@ -4,3 +4,4 @@ gemspec
 
 gem 'pg'
 gem 'benchmark-ips'
+gem 'faker'

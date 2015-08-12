@@ -1,12 +1,15 @@
 PATH
   remote: .
   specs:
-    postgres_jsonb_bench (0.0.1)
+    postgres_benchmarks (0.0.1)
 
 GEM
   remote: https://rubygems.org/
   specs:
     benchmark-ips (2.3.0)
+    faker (1.4.3)
+      i18n (~> 0.5)
+    i18n (0.7.0)
     pg (0.18.2)
     rake (10.4.2)
 
@@ -16,6 +19,7 @@ PLATFORMS
 DEPENDENCIES
   benchmark-ips
   bundler (~> 1.6)
+  faker
   pg
-  postgres_jsonb_bench!
+  postgres_benchmarks!
   rake

@@ -28,9 +28,9 @@ module PostgresBenchmarks
 
             temp_conn.exec( "CREATE TABLE event_publisher_urls_relational (id serial NOT NULL, event_id integer, publisher_id integer, url_id integer, hits_counter integer);" )
 
-            temp_conn.exec( "CREATE TABLE clickable_referrers_relational (id serial NOT NULL, hits_counter integer, referrer_url text);" )
+            temp_conn.exec( "CREATE TABLE clickable_referrers_relational (id serial NOT NULL, hits_counter integer, referrer_url text, epu_id integer);" )
 
-            temp_conn.exec( "CREATE TABLE clickable_clicks_by_days_relational (id serial NOT NULL, hits_counter integer, day date);" )
+            temp_conn.exec( "CREATE TABLE clickable_clicks_by_days_relational (id serial NOT NULL, hits_counter integer, day date, epu_id integer);" )
             
             temp_conn.exec( "CREATE TABLE event_publisher_urls_jsonb (id serial NOT NULL, event_id integer, publisher_id integer, url_id integer, hits_counter integer, clicks_by_referrer jsonb, clicks_by_day jsonb );" )
           ensure

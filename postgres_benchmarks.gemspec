@@ -1,10 +1,10 @@
 # coding: utf-8
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'postgres_jsonb_bench/version'
+require 'postgres_benchmarks/version'
 
 Gem::Specification.new do |spec|
-  spec.name          = "postgres_jsonb_bench"
+  spec.name          = "postgres_benchmarks"
   spec.version       = PostgresBenchmarks::VERSION
   spec.authors       = ["Iain McNulty"]
   spec.email         = ["iainmcnulty@evvnt.com"]

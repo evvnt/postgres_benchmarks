@@ -5,19 +5,18 @@ require_relative './database/test'
 class Inserting
   attr_accessor :db, :clicks_json, :referrer_json, :clicks_values, :referrer_values
   def initialize(urls=3, publishers=38)
-    # @event = Event.create
     @urls = urls
     @publishers = publishers
     @times = urls*publishers
 
-    @referrer_json = File.open($root+'/lib/postgres_jsonb_bench/factories/referrer_data.json').read
-    @clicks_json = File.open($root+'/lib/postgres_jsonb_bench/factories/click_data.json').read
+    @referrer_json = File.open($root+'/lib/postgres_benchmarks/factories/referrer_data.json').read
+    @clicks_json = File.open($root+'/lib/postgres_benchmarks/factories/click_data.json').read
 
     @db = PostgresBenchmarks::Database::Test.new
   end
 
   def escaped_referrer_json
-    @escaped_referrer_json ||= @referrer_json #.gsub('"', '\"')
+    @escaped_referrer_json ||= @referrer_json
   end
 
   def escaped_clicks_json
@@ -25,12 +24,12 @@ class Inserting
   end
 
   def clicks_values
-    clicks_values  ||= (array = JSON.parse(File.open($root+'/lib/postgres_jsonb_bench/factories/click_data.json').read)
+    @clicks_values  ||= (array = JSON.parse(File.open($root+'/lib/postgres_benchmarks/factories/click_data.json').read)
         array.map { |hash| "(#{hash['clicks']}, '#{hash['day_start']}')" }.join(","))
   end
 
   def referrer_values
-    referrer_values ||= (array = JSON.parse(File.open($root+'/lib/postgres_jsonb_bench/factories/referrer_data.json').read)
+    @referrer_values ||= (array = JSON.parse(File.open($root+'/lib/postgres_benchmarks/factories/referrer_data.json').read)
         array.map { |hash| "(#{hash['clicks']}, '#{hash['referrer']}')" }.join(","))
   end
 
