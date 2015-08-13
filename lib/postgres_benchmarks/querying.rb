@@ -3,7 +3,7 @@ require 'json'
 require_relative './database/test'
 require_relative './data'
 
-class Reading < Operation
+class Querying < Operation
 
   def run
     setup
@@ -12,13 +12,11 @@ class Reading < Operation
       # the warmup phase (default 2) and calculation phase (default 5)
       x.config(:time => @times, :warmup => 2)
 
-      # These parameters can also be configured this way
-      # x.time = 5
-      # x.warmup = 2
-
       # Typical mode, runs the block as many times as it can
       x.report("relational_approach") do
-        db.conn.exec(relational_query)
+        db.conn.exec("INSERT INTO clickable_referrers_relational (hits_counter, referrer_url) VALUES #{@data.referrer_values}")
+
+        db.conn.exec("INSERT INTO event_publisher_urls_jsonb (clicks_by_referrer) VALUES ('#{@data.referrer_json}')")
       end
 
       # To reduce overhead, the number of iterations is passed in
@@ -26,22 +24,12 @@ class Reading < Operation
       # Used for when the workload is very small and any overhead
       # introduces incorrectable errors.
       x.report("json_approach") do |times|
-        db.conn.exec("SELECT clicks_by_referrer FROM event_publisher_urls_jsonb WHERE event_publisher_urls_jsonb.id = #{@data.epu_id}")
+        db.conn.exec("UPDATE event_publisher_urls_jsonb SET clicks_by_referrer = ('#{@data.cbd_json}')")
+        db.conn.exec("UPDATE event_publisher_urls_jsonb SET clicks_by_day = ('#{@data.cbd_json}')")
       end
 
       # Compare the iterations per second of the various reports!
       x.compare!
     end
-    # PostgresBenchmarks::Database::Test.teardown
-  end
-
-  def relational_query
-    <<-QUERY
-    SELECT * from event_publisher_urls_relational
-    INNER JOIN clickable_referrers_relational ON event_publisher_urls_relational.id = clickable_referrers_relational.epu_id
-    INNER JOIN clickable_clicks_by_days_relational ON event_publisher_urls_relational.id = clickable_clicks_by_days_relational.epu_id
-    WHERE event_publisher_urls_relational.id = #{@data.epu_id};
-    QUERY
   end
 end
-

@@ -25,6 +25,21 @@ For the needs of evvnt, we wish to test the performance of storing our click dat
 We will benchmark insert, update, and read for these methods and see which is better for us.
 
 
+`pry -r ./app.rb`
+[1] pry(main)> PostgresBenchmarks::Database::Test.setup
+[1] pry(main)> Reading.new.run
+
+### Defaults
+
+when generating a test, we will create EventPublisherUrls. Each of these will represent a url that represents a publisher on an event.
+
+the number of these is the product of the number of urls on the event and the number of publishers.
+
+the default number of urls is 3 and the default number of publishers is 38. This is derived from the average numbers we see in the application at this time.
+
+These defaults can be overridden when running a test.
+
+Reading.new(publishers: 1, urls: 1, num_referrers: 1, times: 1).run
 
 ## Contributing
 

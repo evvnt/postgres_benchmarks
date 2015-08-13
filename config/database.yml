@@ -1,0 +1,12 @@
+postgres:
+  host: localhost
+  username: iain
+  dbname: postgres
+evvnt:
+  host: localhost
+  username: iain
+  dbname: evvnt-dev
+test:
+  host: localhost
+  username: iain
+  dbname: evvnt-dev
