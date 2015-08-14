@@ -5,7 +5,8 @@ require_relative './data'
 
 class Operation
   attr_accessor :db, :data
-  def initialize(publishers: 10, urls: 10, num_referrers: 50, num_days: 20, times: 50)
+  def initialize(events: 10, publishers: 10, urls: 10, num_referrers: 50, num_days: 20, times: 50)
+    @events = events
     @urls = urls
     @publishers = publishers
     @num_referrers = num_referrers
@@ -21,7 +22,8 @@ class Operation
 
   private
   def setup
-    @data ||= PostgresBenchmarks::Data.new(publishers: @publishers,
+    @data ||= PostgresBenchmarks::Data.new(events: @events,
+                                           publishers: @publishers,
                                            urls: @urls,
                                            num_referrers: @num_referrers,
                                            num_days: @num_days,
