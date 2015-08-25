@@ -6,7 +6,9 @@ require_relative './data'
 class Reading < Operation
 
   def run
+    puts "Setting up the data"
     setup
+    puts "Running the benchmark"
     Benchmark.ips do |x|
       # Configure the number of seconds used during
       # the warmup phase (default 2) and calculation phase (default 5)
@@ -26,7 +28,7 @@ class Reading < Operation
       # Used for when the workload is very small and any overhead
       # introduces incorrectable errors.
       x.report("json_approach") do |times|
-        db.conn.exec("SELECT clicks_by_referrer FROM event_publisher_urls_jsonb WHERE event_publisher_urls_jsonb.id = #{@data.epu_id}")
+        db.conn.exec("SELECT clicks_by_referrer FROM event_publisher_urls_jsonb WHERE event_publisher_urls_jsonb.id IN (#{@data.epu_ids.join(", ")})")
       end
 
       # Compare the iterations per second of the various reports!
@@ -40,7 +42,7 @@ class Reading < Operation
     SELECT * from event_publisher_urls_relational
     INNER JOIN clickable_referrers_relational ON event_publisher_urls_relational.id = clickable_referrers_relational.epu_id
     INNER JOIN clickable_clicks_by_days_relational ON event_publisher_urls_relational.id = clickable_clicks_by_days_relational.epu_id
-    WHERE event_publisher_urls_relational.id = #{@data.epu_id};
+    WHERE event_publisher_urls_relational.id IN (#{@data.epu_ids.join(", ")});
     QUERY
   end
 end
