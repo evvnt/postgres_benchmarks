@@ -5,7 +5,7 @@ require_relative './data'
 
 class Operation
   attr_accessor :db, :data
-  def initialize(events: 10, publishers: 10, urls: 10, num_days: 20, times: 50)
+  def initialize(events: 10, publishers: 10, urls: 10, num_referrers: 50, num_days: 20, times: 50)
     @events = events
     @urls = urls
     @publishers = publishers

@@ -5,6 +5,11 @@ require_relative './data'
 
 class Querying < Operation
 
+  # Queries:
+  #   total_clicks_for_category_and_publisher
+  #   total_clicks_by_account
+  #   average_clicks_by_category
+
   def run_average_clicks_by_publisher
     setup
     Benchmark.ips do |x|
@@ -22,7 +27,7 @@ class Querying < Operation
       # Used for when the workload is very small and any overhead
       # introduces incorrectable errors.
       x.report("json_approach") do |times|
-        db.conn.exec(json_averaging_query)
+        db.conn.exec(jsonb_averaging_query)
       end
 
       # Compare the iterations per second of the various reports!
@@ -30,7 +35,7 @@ class Querying < Operation
     end
   end
 
-  def averaging_query
+  def relational_averaging_query
     <<-SQL
     SELECT AVG(clickable_referrers_relational.hits_counter), event_publisher_urls_relational.publisher_id
     FROM clickable_referrers_relational
@@ -41,9 +46,10 @@ class Querying < Operation
     SQL
   end
 
-  def averaging_query
+  def jsonb_averaging_query
     <<-SQL
-    SELECT AVG(event_publisher_urls_jsonb.clicks_by_referrer #>> clicks) SET clicks_by_referrer = ('#{@data.cbd_json}')
+    # SELECT event_id, AVG((clicks_data #>> '{total_clicks}')::integer) from event_publisher_urls_jsonb group by event_id;
+    SELECT event_id, AVG((clicks_data #>> '{clicks_by_publisher, 12}')::integer) from event_publisher_urls_jsonb group by ;
     SQL
   end
 end
