@@ -19,13 +19,20 @@ module PostgresBenchmarks
 
         @publisher_ids = @db.conn.exec("INSERT INTO publishers_relational (name) VALUES #{publisher_values} RETURNING id;").map{ |r| r["id"] }
 
-        @event_url_ids = []
-        @event_ids.each do |id|
-          0.upto(@urls-1) do |index|
-            @event_url_ids |= @db.conn.exec("INSERT INTO urls_relational (event_id, order_id, value) VALUES (#{id}, #{index}, '#{url_value}') RETURNING event_id, order_id ;").values.product(@publisher_ids)
-          end
-        end
+        puts 'getting url values to save'
+        values_to_save = @event_ids.map do |id|
+          print '.1'
+           0.upto(@urls-1).map { |index|
+             print '.2'
+            "(#{id}, #{index}, '#{url_value}')"
+          }.join(', ')
+        end.join(', ')
+        puts 'finished'
+
+        puts 'storing urls'
+        @event_url_ids = @db.conn.exec("INSERT INTO urls_relational (event_id, order_id, value) VALUES #{values_to_save} RETURNING event_id, id").values.product(@publisher_ids)
         @event_url_ids.map!(&:flatten)
+        puts 'finished'
 
         @epu_ids = @db.conn.exec("INSERT INTO event_publisher_urls_relational (event_id, url_id, publisher_id, hits_counter) VALUES #{epu_values} RETURNING id;").values.flatten
         # Insert the generated data into the different db formats
@@ -36,8 +43,6 @@ module PostgresBenchmarks
         @db.conn.exec("UPDATE urls_relational SET total_clicks = #{events_total_clicks};")
 
         # JSONB DATA TYPES BELOW
-
-        # This method needs to fully populate the row with events, publishers and urls along with their generated click stats - this is unfinished
         @db.conn.exec("INSERT INTO event_publisher_urls_jsonb (event_id, url_id, clicks_data) VALUES #{all_json_data}")
       ensure
         @db.conn.close
@@ -116,11 +121,8 @@ module PostgresBenchmarks
     def epu_values
       # creates a publisher association for every event and url combitnation
       puts "associating publisher with event and url combo\n"
-      values = @event_url_ids.product(@publisher_ids).map { |f|
-        print '.1'
-        f.flatten
-      }.map { |a|
-        print '.2'
+      values = @event_url_ids.map { |a|
+        print '.'
         "(#{a[0]}, #{a[1]}, #{a[2]}, #{gen_clicks})"
       }.join(", ")
       puts "finished\n"
@@ -129,7 +131,6 @@ module PostgresBenchmarks
 
     # finish this method to populate the jsonb table
     def all_json_data
-
 
       result = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
                             FROM event_publisher_urls_relational
@@ -268,10 +269,7 @@ module PostgresBenchmarks
     end
 
     def gen_clicks
-      puts "generating number of clicks\n"
-      num = rand(0..100)
-      puts "finished\n"
-      num
+      rand(0..100)
     end
 
     def random_referrers
