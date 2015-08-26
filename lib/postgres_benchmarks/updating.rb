@@ -18,7 +18,7 @@ class Updating < Operation
         @data.referrers.each do |referrer|
           db.conn.exec("UPDATE clickable_referrers_relational SET hits_counter = #{referrer[:clicks]}, referrer_url = '#{referrer[:referrer]}' WHERE clickable_referrers_relational.id = #{@data.epu_id}")
         end
-        
+
         @data.clicks_by_day.each do |cbd|
           db.conn.exec("UPDATE clickable_clicks_by_days_relational SET hits_counter = #{cbd[:clicks]}, day = '#{cbd[:day]}' WHERE clickable_clicks_by_days_relational.id = #{@data.epu_id}")
         end
