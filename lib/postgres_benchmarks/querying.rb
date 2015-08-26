@@ -11,6 +11,23 @@ class Querying < Operation
   #   total_clicks_by_account
   #   average_clicks_by_category
 
+  def run_total_clicks_by_account
+    setup
+    Benchmark.ips do |x|
+      x.config(time: @times, warmup: 2)
+
+      x.report("relational_approach") do
+        db.conn.exec(relational_total_clicks_by_account)
+      end
+
+      x.report("json_approach") do |times|
+        db.conn.exec(jsonb_total_clicks_by_account)
+      end
+
+      x.compare!
+    end
+  end
+
   def run_with_clicks
     setup
     Benchmark.ips do |x|
@@ -47,6 +64,17 @@ class Querying < Operation
   end
 
   private
+  def relational_total_clicks_by_account
+    <<-SQL
+    SELECT SUM(urls_relational.total_clicks)
+    FROM urls_relational
+    INNER JOIN events_relational
+      ON events_relational.id = urls_relational.event_id
+    INNER JOIN accounts
+      ON accounts.id = events_relational.account_id
+    WHERE accounts.id = 2
+    SQL
+  end
 
   ## Relational Queries
   def relational_with_clicks_query
@@ -69,6 +97,18 @@ class Querying < Operation
   end
 
   ## JSONB Queries
+  def jsonb_total_clicks_by_account
+    <<-SQL
+    SELECT SUM((event_publisher_urls_jsonb.clicks_data ->> 'total_clicks')::integer)
+    FROM event_publisher_urls_jsonb
+    INNER JOIN events_relational
+      ON events_relational.id = event_publisher_urls_jsonb.event_id
+    INNER JOIN accounts
+      ON accounts.id = events_relational.account_id
+    WHERE accounts.id = 2
+    SQL
+  end
+
   def jsonb_with_clicks_query
     <<-SQL
     SELECT event_publisher_urls_jsonb.*
