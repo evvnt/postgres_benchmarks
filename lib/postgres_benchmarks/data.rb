@@ -1,6 +1,6 @@
 module PostgresBenchmarks
   class Data
-    attr_accessor :epu_ids, :referrers, :day, :db
+    attr_accessor :epu_ids, :referrers, :day, :db, :events_total_clicks
     def initialize(events:, publishers:, urls:, num_referrers:, num_days:, times:)
       @events = events
       @urls=urls
@@ -31,9 +31,9 @@ module PostgresBenchmarks
 
         @db.conn.exec("INSERT INTO clickable_clicks_by_days_relational (epu_id, hits_counter, day) VALUES #{cbd_values}")
 
+        @db.conn.exec("UPDATE urls_relational SET total_clicks = #{events_total_clicks};")
 
         # JSONB DATA TYPES BELOW
-
 
         # This method needs to fully populate the row with events, publishers and urls along with their generated click stats - this is unfinished
         @db.conn.exec("INSERT INTO event_publisher_urls_jsonb (event_id, url_id, clicks_data) VALUES #{all_json_data}")
@@ -68,6 +68,10 @@ module PostgresBenchmarks
 
     def event_url_publisher_values
       event_url_publisher_as_values
+    end
+
+    def events_total_clicks
+      events_total_clicks ||= referrers.inject(0) { |memo, val| memo += val[:clicks] }
     end
 
     def event_values

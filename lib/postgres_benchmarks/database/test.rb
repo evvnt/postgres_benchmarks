@@ -29,11 +29,11 @@ module PostgresBenchmarks
             
             temp_conn.exec( "CREATE TABLE publishers_relational (id serial NOT NULL, name character varying(255));" )
             
-            temp_conn.exec( "CREATE TABLE urls_relational (id serial NOT NULL, value character varying(255), order_id integer, event_id integer);" )
+            temp_conn.exec( "CREATE TABLE urls_relational (id serial NOT NULL, value character varying(255), order_id integer, event_id integer, total_clicks integer);" )
 
             temp_conn.exec( "CREATE TABLE event_publisher_urls_relational (id serial NOT NULL, event_id integer, publisher_id integer, url_id integer, hits_counter integer);" )
 
-            temp_conn.exec( "CREATE TABLE clickable_referrers_relational (id serial NOT NULL, hits_counter integer, referrer_url text, epu_id integer);" )
+            temp_conn.exec( "CREATE TABLE clickable_referrers_relational (id serial NOT NULL, hits_counter integer, epu_id integer);" )
 
             temp_conn.exec( "CREATE TABLE clickable_clicks_by_days_relational (id serial NOT NULL, hits_counter integer, day date, epu_id integer);" )
 
