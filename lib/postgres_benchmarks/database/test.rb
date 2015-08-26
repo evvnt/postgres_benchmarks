@@ -25,7 +25,9 @@ module PostgresBenchmarks
           begin
             temp_conn = PG::Connection.connect(dbname: 'test', host: 'localhost')
 
-            temp_conn.exec( "CREATE TABLE events_relational (id serial NOT NULL, title character varying(255), description text, summary text);" )
+            temp_conn.exec( "CREATE TABLE accounts (id serial NOT NULL, email character varying(255));" )
+
+            temp_conn.exec( "CREATE TABLE events_relational (id serial NOT NULL, account_id integer, title character varying(255), description text, summary text);" )
 
             temp_conn.exec( "CREATE TABLE publishers_relational (id serial NOT NULL, name character varying(255));" )
 

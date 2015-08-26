@@ -3,8 +3,8 @@ module PostgresBenchmarks
     attr_accessor :epu_ids, :referrers, :day, :db
     def initialize(events:, publishers:, urls:, num_referrers:, num_days:, times:)
       @events = events
-      @urls=urls
-      @publishers=publishers
+      @urls = urls
+      @publishers = publishers
       @num_referrers = num_referrers
       @num_days = num_days
       @db = PostgresBenchmarks::Database::Test.new
@@ -13,7 +13,9 @@ module PostgresBenchmarks
 
     def generate
       begin
-        @event_ids = @db.conn.exec("INSERT INTO events_relational (title, summary, description) VALUES #{event_values} RETURNING id;").map{ |r| r["id"] }
+        @account_ids = @db.conn.exec("INSERT INTO accounts (email) VALUES #{account_values} RETURNING id;").map{ |r| r["id"] }
+
+        @event_ids = @db.conn.exec("INSERT INTO events_relational (title, summary, description, account_id) VALUES #{event_values} RETURNING id;").map{ |r| r["id"] }
 
         @publisher_ids = @db.conn.exec("INSERT INTO publishers_relational (name) VALUES #{publisher_values} RETURNING id;").map{ |r| r["id"] }
 
@@ -70,8 +72,14 @@ module PostgresBenchmarks
       event_url_publisher_as_values
     end
 
+    def account_values
+      1.upto(@events).map { "('#{::Faker::Internet.email}')"}.join(", ")
+    end
+
     def event_values
-      1.upto(@events).map { "('#{::Faker::Lorem.words(5, true).join(" ")}', '#{::Faker::Lorem.sentence}', '#{::Faker::Lorem.paragraph(5)}')"}.join(", ")
+      1.upto(@events).map do |id|
+        "('#{::Faker::Lorem.words(5, true).join(" ")}', '#{::Faker::Lorem.sentence}', '#{::Faker::Lorem.paragraph(5)}', '#{id}')"
+      end.join(', ')
     end
 
     def url_value
