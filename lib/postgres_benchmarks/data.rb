@@ -74,119 +74,119 @@ module PostgresBenchmarks
 
     def events_total_clicks
       events_total_clicks ||= referrers.inject(0) { |memo, val| memo += val[:clicks] }
+    end
 
-      def account_values
-        1.upto(@events).map { "('#{::Faker::Internet.email}')"}.join(", ")
-      end
+    def account_values
+      1.upto(@events).map { "('#{::Faker::Internet.email}')"}.join(", ")
+    end
 
-      def event_values
-        1.upto(@events).map do |id|
-          "('#{::Faker::Lorem.words(5, true).join(" ")}', '#{::Faker::Lorem.sentence}', '#{::Faker::Lorem.paragraph(5)}', '#{id}')"
-        end.join(', ')
-      end
+    def event_values
+      1.upto(@events).map do |id|
+        "('#{::Faker::Lorem.words(5, true).join(" ")}', '#{::Faker::Lorem.sentence}', '#{::Faker::Lorem.paragraph(5)}', '#{id}')"
+      end.join(', ')
+    end
 
-      def url_value
-        ::Faker::Internet.url
-      end
+    def url_value
+      ::Faker::Internet.url
+    end
 
-      def publisher_values
-        1.upto(@publishers).map { "('#{::Faker::Lorem.words(2, true).join(" ")}')"}.join(", ")
-      end
+    def publisher_values
+      1.upto(@publishers).map { "('#{::Faker::Lorem.words(2, true).join(" ")}')"}.join(", ")
+    end
 
-      def epu_values
-        # creates a publisher association for every event and url combitnation
-        @event_url_ids.product(@publisher_ids).map { |f| f.flatten }.map { |a| "(#{a[0]}, #{a[1]}, #{a[2]}, #{gen_clicks})"}.join(", ")
-      end
+    def epu_values
+      # creates a publisher association for every event and url combitnation
+      @event_url_ids.product(@publisher_ids).map { |f| f.flatten }.map { |a| "(#{a[0]}, #{a[1]}, #{a[2]}, #{gen_clicks})"}.join(", ")
+    end
 
-      # finish this method to populate the jsonb table
-      def all_json_data
+    # finish this method to populate the jsonb table
+    def all_json_data
 
 
-        result = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
+      result = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
                             FROM event_publisher_urls_relational
                             INNER JOIN clickable_clicks_by_days_relational ON clickable_clicks_by_days_relational.epu_id = event_publisher_urls_relational.id")
-        godzilla = []
-        #  {
-        # 'total_clicks' => 10,
-        # 'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 },
-        # 'clicks_by_day' => [{ 'clicks' => 10, 'day_start' => '2014-01-26T04:00:00+00:00' }, { 'clicks' => 40, 'day_start' => '2014-01-27T04:00:00+00:00' }]
-        #  }
+      godzilla = []
+      #  {
+      # 'total_clicks' => 10,
+      # 'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 },
+      # 'clicks_by_day' => [{ 'clicks' => 10, 'day_start' => '2014-01-26T04:00:00+00:00' }, { 'clicks' => 40, 'day_start' => '2014-01-27T04:00:00+00:00' }]
+      #  }
 
 
-        # total_clicks is sum of clicks by day for records with same event_id  ---- [10, 50, 33]
-        event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-        total_clicks = event_url_grouped.keys.map {|key| event_url_grouped[key].inject(0) {|sum, object| sum += object["day_hits"].to_i } }
+      # total_clicks is sum of clicks by day for records with same event_id  ---- [10, 50, 33]
+      event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
+      total_clicks = event_url_grouped.keys.map {|key| event_url_grouped[key].inject(0) {|sum, object| sum += object["day_hits"].to_i } }
 
-        # clicks_by_publisher  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
-        # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-        publisher_clicks_grouped = event_url_grouped.keys.map {|key| event_url_grouped[key].group_by { |e| e['publisher_id'] } }
-        clicks_by_publisher = publisher_clicks_grouped.map { |event| event.each_with_object({}) { |(publisher_id,data), h| h[publisher_id] = data.inject(0) { |memo, hits| memo += hits['day_hits'].to_i} } }
-
-
-        # clicks_by_day  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
-        # sum up the hits on a URL and event by day
-        # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-        clicks_by_day = event_url_grouped.keys.map { |key| event_url_grouped[key].group_by { |data| data['day'] }.each_with_object({}) { |(k,v), h| h[k] = v.inject(0) { |memo, hits| memo += hits['day_hits'].to_i } } }
-
-        count = result.count
-
-        #
-        0.upto(event_url_grouped.count-1) do |index|
-          godzilla << {'total_clicks' => total_clicks[index], 'clicks_by_publisher' => clicks_by_publisher[index], 'clicks_by_day' => clicks_by_day[index]}
-        end
+      # clicks_by_publisher  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
+      # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
+      publisher_clicks_grouped = event_url_grouped.keys.map {|key| event_url_grouped[key].group_by { |e| e['publisher_id'] } }
+      clicks_by_publisher = publisher_clicks_grouped.map { |event| event.each_with_object({}) { |(publisher_id,data), h| h[publisher_id] = data.inject(0) { |memo, hits| memo += hits['day_hits'].to_i} } }
 
 
-        # event_url_grouped.keys.map { |ele| ele.split(", ") }
-        godzilla.map.with_index { |click_data, idx| "(#{event_url_grouped.keys[idx].split(", ")[0]}, #{event_url_grouped.keys[idx].split(", ")[1]}, '#{click_data.to_json}')" }.join(", ")
+      # clicks_by_day  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
+      # sum up the hits on a URL and event by day
+      # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
+      clicks_by_day = event_url_grouped.keys.map { |key| event_url_grouped[key].group_by { |data| data['day'] }.each_with_object({}) { |(k,v), h| h[k] = v.inject(0) { |memo, hits| memo += hits['day_hits'].to_i } } }
 
-        # data = @db.conn.exec(json_select_sql_query) { || "(#{event_id}, #{publisher_id}, #{url_id}, #{hits_counter}, #{clicks_by_referrer}, #{clicks_by_day})" }.join(", ")
+      count = result.count
+
+      #
+      0.upto(event_url_grouped.count-1) do |index|
+        godzilla << {'total_clicks' => total_clicks[index], 'clicks_by_publisher' => clicks_by_publisher[index], 'clicks_by_day' => clicks_by_day[index]}
       end
 
-      private
 
-      def referrers_as_values(with_id=true)
-        if with_id
-          @referrer_values = @epu_ids.map { |epu_id| referrers.map { |hash| "(#{epu_id}, #{hash[:clicks]})" }.join(",") }.join(", ")
-        else
-          @referrer_values = referrers.map { |hash| "(#{hash[:clicks]})" }.join(",")
-        end
+      # event_url_grouped.keys.map { |ele| ele.split(", ") }
+      godzilla.map.with_index { |click_data, idx| "(#{event_url_grouped.keys[idx].split(", ")[0]}, #{event_url_grouped.keys[idx].split(", ")[1]}, '#{click_data.to_json}')" }.join(", ")
+
+      # data = @db.conn.exec(json_select_sql_query) { || "(#{event_id}, #{publisher_id}, #{url_id}, #{hits_counter}, #{clicks_by_referrer}, #{clicks_by_day})" }.join(", ")
+    end
+
+    private
+
+    def referrers_as_values(with_id=true)
+      if with_id
+        @referrer_values = @epu_ids.map { |epu_id| referrers.map { |hash| "(#{epu_id}, #{hash[:clicks]})" }.join(",") }.join(", ")
+      else
+        @referrer_values = referrers.map { |hash| "(#{hash[:clicks]})" }.join(",")
       end
+    end
 
-      def cbds_as_values(with_id=true)
-        if with_id
-          @cbd_values = @epu_ids.map { |epu_id| clicks_by_day.map { |hash| "(#{epu_id}, #{hash[:clicks]}, '#{hash[:day]}')" }.join(",") }.join(", ")
-        else
-          @cbd_values = clicks_by_day.map { |hash| "(#{hash[:clicks]}, '#{hash[:day]}')" }.join(",")
-        end
+    def cbds_as_values(with_id=true)
+      if with_id
+        @cbd_values = @epu_ids.map { |epu_id| clicks_by_day.map { |hash| "(#{epu_id}, #{hash[:clicks]}, '#{hash[:day]}')" }.join(",") }.join(", ")
+      else
+        @cbd_values = clicks_by_day.map { |hash| "(#{hash[:clicks]}, '#{hash[:day]}')" }.join(",")
       end
+    end
 
-      def gen_clicks
-        rand(0..100)
-      end
+    def gen_clicks
+      rand(0..100)
+    end
 
-      def random_referrers
-        Array.new(@num_referrers) { {epu_id: @epu_id, clicks: gen_clicks} }
-      end
+    def random_referrers
+      Array.new(@num_referrers) { {epu_id: @epu_id, clicks: gen_clicks} }
+    end
 
-      def random_cbds
-        Array.new(@num_days) { {epu_id: @epu_id, clicks: gen_clicks, day: random_day} }
-      end
+    def random_cbds
+      Array.new(@num_days) { {epu_id: @epu_id, clicks: gen_clicks, day: random_day} }
+    end
 
-      def random_day
-        @day ||= Date.parse("2012-06-06")
-        @day = @day.next_day
-      end
+    def random_day
+      @day ||= Date.parse("2012-06-06")
+      @day = @day.next_day
+    end
 
-      def json_select_sql_query
-        <<-SQL
+    def json_select_sql_query
+      <<-SQL
       SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
       FROM event_publisher_urls_relational
       INNER JOIN clickable_clicks_by_days_relational ON clickable_clicks_by_days_relational.epu_id = event_publisher_urls_relational.id
-        SQL
-        # res = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
-        # FROM event_publisher_urls_relational
-        # INNER JOIN clickable_clicks_by_days_relational ON clickable_clicks_by_days_relational.epu_id = event_publisher_urls_relational.id")
-      end
+      SQL
+      # res = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
+      # FROM event_publisher_urls_relational
+      # INNER JOIN clickable_clicks_by_days_relational ON clickable_clicks_by_days_relational.epu_id = event_publisher_urls_relational.id")
     end
   end
 end
