@@ -73,17 +73,33 @@ module PostgresBenchmarks
     end
 
     def events_total_clicks
-      events_total_clicks ||= referrers.inject(0) { |memo, val| memo += val[:clicks] }
+      puts "getting event total clicks\n"
+      events_total_clicks ||= referrers.inject(0) { |memo, val|
+        print '.'
+        memo += val[:clicks]
+      }
+      puts "finished\n"
+      events_total_clicks
     end
 
     def account_values
-      1.upto(@events).map { "('#{::Faker::Internet.email}')"}.join(", ")
+      puts 'getting account value'
+      values = 1.upto(@events).map {
+        print '.'
+        "('#{::Faker::Internet.email}')"
+      }.join(", ")
+      puts 'finished'
+      values
     end
 
     def event_values
-      1.upto(@events).map do |id|
+      puts "getting event values\n"
+      values = 1.upto(@events).map do |id|
+        print '.'
         "('#{::Faker::Lorem.words(5, true).join(" ")}', '#{::Faker::Lorem.sentence}', '#{::Faker::Lorem.paragraph(5)}', '#{id}')"
       end.join(', ')
+      puts "finished\n"
+      values
     end
 
     def url_value
@@ -91,12 +107,24 @@ module PostgresBenchmarks
     end
 
     def publisher_values
-      1.upto(@publishers).map { "('#{::Faker::Lorem.words(2, true).join(" ")}')"}.join(", ")
+      puts "getting publisher values\n"
+      values = 1.upto(@publishers).map { "('#{::Faker::Lorem.words(2, true).join(" ")}')"}.join(", ")
+      puts "finished\n"
+      values
     end
 
     def epu_values
       # creates a publisher association for every event and url combitnation
-      @event_url_ids.product(@publisher_ids).map { |f| f.flatten }.map { |a| "(#{a[0]}, #{a[1]}, #{a[2]}, #{gen_clicks})"}.join(", ")
+      puts "associating publisher with event and url combo\n"
+      values = @event_url_ids.product(@publisher_ids).map { |f|
+        print '.1'
+        f.flatten
+      }.map { |a|
+        print '.2'
+        "(#{a[0]}, #{a[1]}, #{a[2]}, #{gen_clicks})"
+      }.join(", ")
+      puts "finished\n"
+      values
     end
 
     # finish this method to populate the jsonb table
@@ -115,54 +143,135 @@ module PostgresBenchmarks
 
 
       # total_clicks is sum of clicks by day for records with same event_id  ---- [10, 50, 33]
-      event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-      total_clicks = event_url_grouped.keys.map {|key| event_url_grouped[key].inject(0) {|sum, object| sum += object["day_hits"].to_i } }
+      puts "grouping by event_url\n"
+      event_url_grouped = result.group_by {|e|
+        print '.1'
+        "#{e['event_id']}, #{e['url_id']}"
+      }
+      puts "finsihed\n"
+
+      puts "getting total clicks\n"
+      total_clicks = event_url_grouped.keys.map {|key|
+        print '.1'
+        event_url_grouped[key].inject(0) {|sum, object|
+          print '.2'
+          sum += object["day_hits"].to_i
+        }
+      }
+      puts "finished\n"
 
       # clicks_by_publisher  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
       # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-      publisher_clicks_grouped = event_url_grouped.keys.map {|key| event_url_grouped[key].group_by { |e| e['publisher_id'] } }
-      clicks_by_publisher = publisher_clicks_grouped.map { |event| event.each_with_object({}) { |(publisher_id,data), h| h[publisher_id] = data.inject(0) { |memo, hits| memo += hits['day_hits'].to_i} } }
+      puts "grouping by publisher clicks"
+      publisher_clicks_grouped = event_url_grouped.keys.map {|key|
+        print '.1'
+        event_url_grouped[key].group_by { |e|
+          print '.2'
+          e['publisher_id']
+        }
+      }
+      puts "finished\n"
+
+      puts "getting clicks by publisher\n"
+      clicks_by_publisher = publisher_clicks_grouped.map { |event|
+        print '.1'
+        event.each_with_object({}) { |(publisher_id,data), h|
+          print '.2'
+          h[publisher_id] = data.inject(0) {
+            |memo, hits| memo += hits['day_hits'].to_i
+            print '.3'
+          }
+        }
+      }
+      puts "finished\n"
 
 
       # clicks_by_day  ---- [{'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}, {'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 }}]
       # sum up the hits on a URL and event by day
       # event_url_grouped = result.group_by {|e| "#{e['event_id']}, #{e['url_id']}" }
-      clicks_by_day = event_url_grouped.keys.map { |key| event_url_grouped[key].group_by { |data| data['day'] }.each_with_object({}) { |(k,v), h| h[k] = v.inject(0) { |memo, hits| memo += hits['day_hits'].to_i } } }
+      puts "making clicks by day\n"
+      clicks_by_day = event_url_grouped.keys.map { |key|
+        print '.1'
+        event_url_grouped[key].group_by { |data|
+          print '.2'
+          data['day']
+        }.each_with_object({}) { |(k,v), h|
+          print '.3'
+          h[k] = v.inject(0) { |memo, hits|
+            print '.4'
+            memo += hits['day_hits'].to_i
+          }
+        }
+      }
+      puts "finished\n"
 
       count = result.count
 
       #
+      puts "creating godzilla array\n"
       0.upto(event_url_grouped.count-1) do |index|
+        print '.1'
         godzilla << {'total_clicks' => total_clicks[index], 'clicks_by_publisher' => clicks_by_publisher[index], 'clicks_by_day' => clicks_by_day[index]}
       end
+      puts "finished\n"
 
 
       # event_url_grouped.keys.map { |ele| ele.split(", ") }
-      godzilla.map.with_index { |click_data, idx| "(#{event_url_grouped.keys[idx].split(", ")[0]}, #{event_url_grouped.keys[idx].split(", ")[1]}, '#{click_data.to_json}')" }.join(", ")
+      puts "making string to input into database.\n"
+      return_value = godzilla.map.with_index { |click_data, idx|
+        print '.'
+        "(#{event_url_grouped.keys[idx].split(", ")[0]}, #{event_url_grouped.keys[idx].split(", ")[1]}, '#{click_data.to_json}')"
+      }.join(", ")
+      puts "finished\n"
 
+      return_value
       # data = @db.conn.exec(json_select_sql_query) { || "(#{event_id}, #{publisher_id}, #{url_id}, #{hits_counter}, #{clicks_by_referrer}, #{clicks_by_day})" }.join(", ")
     end
 
     private
 
     def referrers_as_values(with_id=true)
+      puts "collecting referring values\n"
       if with_id
-        @referrer_values = @epu_ids.map { |epu_id| referrers.map { |hash| "(#{epu_id}, #{hash[:clicks]})" }.join(",") }.join(", ")
+        @referrer_values = @epu_ids.map { |epu_id|
+          print '.1'
+          referrers.map { |hash|
+            print '.2s'
+            "(#{epu_id}, #{hash[:clicks]})"
+          }.join(",")
+        }.join(", ")
       else
         @referrer_values = referrers.map { |hash| "(#{hash[:clicks]})" }.join(",")
       end
+      puts "finished\n"
+      @referrer_values
     end
 
     def cbds_as_values(with_id=true)
+      puts "collecting cdb values\n"
       if with_id
-        @cbd_values = @epu_ids.map { |epu_id| clicks_by_day.map { |hash| "(#{epu_id}, #{hash[:clicks]}, '#{hash[:day]}')" }.join(",") }.join(", ")
+        @cbd_values = @epu_ids.map { |epu_id|
+          print '.1'
+          clicks_by_day.map { |hash|
+            print '.2'
+            "(#{epu_id}, #{hash[:clicks]}, '#{hash[:day]}')"
+          }.join(",")
+        }.join(", ")
       else
-        @cbd_values = clicks_by_day.map { |hash| "(#{hash[:clicks]}, '#{hash[:day]}')" }.join(",")
+        @cbd_values = clicks_by_day.map { |hash|
+          print '.1'
+          "(#{hash[:clicks]}, '#{hash[:day]}')"
+        }.join(",")
       end
+      puts "finished\n"
+      @cbd_values
     end
 
     def gen_clicks
-      rand(0..100)
+      puts "generating number of clicks\n"
+      num = rand(0..100)
+      puts "finished\n"
+      num
     end
 
     def random_referrers

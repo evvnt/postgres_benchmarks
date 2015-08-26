@@ -77,13 +77,6 @@ class Querying < Operation
     SQL
   end
 
-  def relational_with_clicks_query
-    <<-SQL
-    SELECT urls_relational.*
-    FROM urls_relational
-    WHERE urls_relational.total_clicks > 0
-    SQL
-  end
 
   def relational_average_clicks_for_publisher_query
     <<-SQL
@@ -106,6 +99,14 @@ class Querying < Operation
     INNER JOIN accounts
       ON accounts.id = events_relational.account_id
     WHERE accounts.id = 2
+    SQL
+  end
+
+  def relational_with_clicks_query
+    <<-SQL
+    SELECT urls_relational.*
+    FROM urls_relational
+    WHERE urls_relational.total_clicks > 0
     SQL
   end
 
