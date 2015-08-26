@@ -64,6 +64,7 @@ class Querying < Operation
   end
 
   private
+  ## Relational Queries
   def relational_total_clicks_by_account
     <<-SQL
     SELECT SUM(urls_relational.total_clicks)
@@ -76,7 +77,6 @@ class Querying < Operation
     SQL
   end
 
-  ## Relational Queries
   def relational_with_clicks_query
     <<-SQL
     SELECT urls_relational.*
@@ -112,7 +112,7 @@ class Querying < Operation
   def jsonb_with_clicks_query
     <<-SQL
     SELECT event_publisher_urls_jsonb.*
-    FROM urls
+    FROM event_publisher_urls_jsonb
     WHERE (event_publisher_urls_jsonb.clicks_data ->> 'total_clicks')::integer > 0
     SQL
   end
