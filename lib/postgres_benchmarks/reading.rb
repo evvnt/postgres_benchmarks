@@ -12,7 +12,7 @@ class Reading < Operation
     Benchmark.ips do |x|
       # Configure the number of seconds used during
       # the warmup phase (default 2) and calculation phase (default 5)
-      x.config(:time => @times, :warmup => 2)
+      x.config(time: @times, warmup: 2)
 
       # These parameters can also be configured this way
       # x.time = 5
@@ -28,7 +28,7 @@ class Reading < Operation
       # Used for when the workload is very small and any overhead
       # introduces incorrectable errors.
       x.report("json_approach") do |times|
-        db.conn.exec("SELECT clicks_by_referrer FROM event_publisher_urls_jsonb WHERE event_publisher_urls_jsonb.id IN (#{@data.epu_ids.join(", ")})")
+        #db.conn.exec("SELECT clicks_by_referrer FROM event_publisher_urls_jsonb WHERE event_publisher_urls_jsonb.id IN (#{@data.epu_ids.join(", ")})")
       end
 
       # Compare the iterations per second of the various reports!

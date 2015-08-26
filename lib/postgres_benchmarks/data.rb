@@ -10,7 +10,7 @@ module PostgresBenchmarks
       @db = PostgresBenchmarks::Database::Test.new
       @day
     end
-    
+
     def generate
       begin
         @event_ids = @db.conn.exec("INSERT INTO events_relational (title, summary, description) VALUES #{event_values} RETURNING id;").map{ |r| r["id"] }
@@ -90,13 +90,13 @@ module PostgresBenchmarks
     # finish this method to populate the jsonb table
     def all_json_data
 
-      
+
         result = db.conn.exec("SELECT event_id, publisher_id, url_id, clickable_clicks_by_days_relational.day, clickable_clicks_by_days_relational.hits_counter as day_hits
                             FROM event_publisher_urls_relational
                             INNER JOIN clickable_clicks_by_days_relational ON clickable_clicks_by_days_relational.epu_id = event_publisher_urls_relational.id")
         godzilla = []
         #  {
-        # 'total_clicks' => 10, 
+        # 'total_clicks' => 10,
         # 'clicks_by_publisher' => { ’12’ => 8, ‘1’ => 2 },
         # 'clicks_by_day' => [{ 'clicks' => 10, 'day_start' => '2014-01-26T04:00:00+00:00' }, { 'clicks' => 40, 'day_start' => '2014-01-27T04:00:00+00:00' }]
         #  }
@@ -119,7 +119,7 @@ module PostgresBenchmarks
 
         count = result.count
 
-        # 
+        #
         0.upto(event_url_grouped.count-1) do |index|
           godzilla << {'total_clicks' => total_clicks[index], 'clicks_by_publisher' => clicks_by_publisher[index], 'clicks_by_day' => clicks_by_day[index]}
         end
@@ -127,7 +127,7 @@ module PostgresBenchmarks
 
         # event_url_grouped.keys.map { |ele| ele.split(", ") }
         godzilla.map.with_index { |click_data, idx| "(#{event_url_grouped.keys[idx].split(", ")[0]}, #{event_url_grouped.keys[idx].split(", ")[1]}, '#{click_data.to_json}')" }.join(", ")
-      
+
       # data = @db.conn.exec(json_select_sql_query) { || "(#{event_id}, #{publisher_id}, #{url_id}, #{hits_counter}, #{clicks_by_referrer}, #{clicks_by_day})" }.join(", ")
     end
 

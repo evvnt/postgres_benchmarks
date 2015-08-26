@@ -6,14 +6,14 @@ module PostgresBenchmarks
     class Test
       attr_accessor :conn
       def initialize(dbname: 'test')
-        @conn = PG::Connection.connect(dbname: dbname, user: 'iain', host: 'localhost')
+        @conn = PG::Connection.connect(dbname: dbname, host: 'localhost')
       end
 
       class << self
         def setup
           begin
 
-            # get_table_names 
+            # get_table_names
             # table_names= db.conn.exec("select table_name from information_schema.tables where table_schema='public' and table_type='BASE TABLE'").entries
             temp_conn = PG::Connection.connect(dbname: 'postgres', host: 'localhost')
             temp_conn.exec('DROP DATABASE IF EXISTS test;')
@@ -26,9 +26,9 @@ module PostgresBenchmarks
             temp_conn = PG::Connection.connect(dbname: 'test', host: 'localhost')
 
             temp_conn.exec( "CREATE TABLE events_relational (id serial NOT NULL, title character varying(255), description text, summary text);" )
-            
+
             temp_conn.exec( "CREATE TABLE publishers_relational (id serial NOT NULL, name character varying(255));" )
-            
+
             temp_conn.exec( "CREATE TABLE urls_relational (id serial NOT NULL, value character varying(255), order_id integer, event_id integer);" )
 
             temp_conn.exec( "CREATE TABLE event_publisher_urls_relational (id serial NOT NULL, event_id integer, publisher_id integer, url_id integer, hits_counter integer);" )
